@@ -247,8 +247,17 @@ class TeamInvite(FormView):
             })
         return self.render_to_response(data)
 
+    def form_invalid(self, form):
+        data = {
+            "html": render_to_string("teams/_invite_form.html", {
+                "invite_form": form,
+                "team": self.team
+            }, context_instance=RequestContext(self.request))
+        }
+        return self.render_to_response(data)
+
     def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(json.dumps(context))
+        return JsonResponse(json.dumps(context), safe=False)
 
 
 @team_required

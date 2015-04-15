@@ -190,6 +190,10 @@ class TeamInvite(FormView):
     @method_decorator(team_required)
     @method_decorator(login_required)
     def dispatch(self, *args, **kwargs):
+        self.team = self.request.team
+        self.role = team.role_for(self.request.user)
+        if self.role not in [Membership.ROLE_MANAGER, Membership.ROLE_OWNER]:
+            raise Http404()
         return super(TeamInvite, self).dispatch(*args, **kwargs)
 
 

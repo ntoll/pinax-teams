@@ -184,7 +184,7 @@ def team_reject(request, pk):
     return redirect("team_detail", slug=membership.team.slug)
 
 
-class TeamInvite(FormView):
+class TeamInviteView(FormView):
     http_method_names = ["post"]
     form_class = TeamInviteUserForm
 
@@ -195,10 +195,10 @@ class TeamInvite(FormView):
         self.role = self.team.role_for(self.request.user)
         if self.role not in [Membership.ROLE_MANAGER, Membership.ROLE_OWNER]:
             raise Http404()
-        return super(TeamInvite, self).dispatch(*args, **kwargs)
+        return super(TeamInviteView, self).dispatch(*args, **kwargs)
 
     def get_form_kwargs(self):
-        form_kwargs = super(TeamInvite, self).get_form_kwargs()
+        form_kwargs = super(TeamInviteView, self).get_form_kwargs()
         form_kwargs.update({"team": self.team})
         return form_kwargs
 

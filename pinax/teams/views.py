@@ -4,9 +4,10 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpRespons
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.views.generic.edit import CreateView
-from django.views.generic import ListView
+from django.views.generic import ListView, FormView
 
 from django.contrib import messages
 
@@ -181,6 +182,15 @@ def team_reject(request, pk):
     if membership.reject(by=request.user):
         messages.success(request, "Rejected application.")
     return redirect("team_detail", slug=membership.team.slug)
+
+
+class TeamInvite(FormView):
+    http_method_names = ["post"]
+
+    @method_decorator(team_required)
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(TeamInvite, self).dispatch(*args, **kwargs)
 
 
 @team_required

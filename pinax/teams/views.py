@@ -186,6 +186,7 @@ def team_reject(request, pk):
 
 class TeamInvite(FormView):
     http_method_names = ["post"]
+    form_class = TeamInviteUserForm
 
     @method_decorator(team_required)
     @method_decorator(login_required)
@@ -196,6 +197,52 @@ class TeamInvite(FormView):
             raise Http404()
         return super(TeamInvite, self).dispatch(*args, **kwargs)
 
+    def get_form_kwargs(self):
+        form_kwargs = super(TeamInvite, self).get_form_kwargs()
+        form_kwargs.update({"team": self.team})
+
+    def form_valid(self, form):
+        user_or_email = form.cleaned_data["invitee"]
+        role = form.cleaned_data["role"]
+        if isinstance(user_or_email, string_types):
+            membership = self.team.invite_user(request.user, user_or_email, role)
+        else:
+            membership = self.team.add_user(user_or_email, role)
+        form_class = self.get_form_class()
+        data = {
+            "html": render_to_string(
+                "teams/_invite_form.html",
+                {
+                    "invite_form": form_class(team=self.team),
+                    "team": self.team
+                },
+                context_instance=RequestContext(self.request)
+            )
+        }
+        if membership is not None:
+            if membership.state == Membership.STATE_APPLIED:
+                fragment_class = ".applicants"
+            elif membership.state == Membership.STATE_INVITED:
+                fragment_class = ".invitees"
+            elif membership.state in (Membership.STATE_AUTO_JOINED, Membership.STATE_ACCEPTED):
+                fragment_class = {
+                    Membership.ROLE_OWNER: ".owners",
+                    Membership.ROLE_MANAGER: ".managers",
+                    Membership.ROLE_MEMBER: ".members"
+                }[membership.role]
+            data.update({
+                "append-fragments": {
+                    fragment_class: render_to_string(
+                        "teams/_membership.html",
+                        {
+                            "membership": membership,
+                            "team": self.team
+                        },
+                        context_instance=RequestContext(self.request)
+                    )
+                }
+            })
+        
 
 @team_required
 @login_required

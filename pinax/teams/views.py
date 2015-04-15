@@ -257,7 +257,7 @@ class TeamInvite(FormView):
         return self.render_to_response(data)
 
     def render_to_response(self, context, **response_kwargs):
-        return JsonResponse(json.dumps(context), safe=False)
+        return JsonResponse(context)
 
 
 @team_required

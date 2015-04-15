@@ -207,7 +207,7 @@ class TeamInviteView(FormView):
         role = form.cleaned_data["role"]
         if isinstance(user_or_email, string_types):
             # @@@ 
-            membership = self.team.invite_user(request.user, user_or_email, role)
+            membership = self.team.invite_user(self.request.user, user_or_email, role)
         else:
             # @@@ still notify user?
             membership = self.team.add_user(user_or_email, role)

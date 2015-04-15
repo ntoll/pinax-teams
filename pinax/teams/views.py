@@ -1,6 +1,6 @@
 import json
 
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse  # @@@ Django 1.x compatability?
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
@@ -242,7 +242,11 @@ class TeamInvite(FormView):
                     )
                 }
             })
-        
+        return self.render_to_response(data)
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(json.dumps(context))
+
 
 @team_required
 @login_required

@@ -1,12 +1,13 @@
 import json
 
-from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden
+from django.http import Http404, HttpResponse, HttpResponseRedirect, HttpResponseForbidden, JsonResponse  # @@@ Django 1.x compatability?
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template import RequestContext
 from django.template.loader import render_to_string
+from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.views.generic.edit import CreateView
-from django.views.generic import ListView
+from django.views.generic import ListView, FormView
 
 from django.contrib import messages
 
@@ -181,6 +182,80 @@ def team_reject(request, pk):
     if membership.reject(by=request.user):
         messages.success(request, "Rejected application.")
     return redirect("team_detail", slug=membership.team.slug)
+
+
+class TeamInviteView(FormView):
+    http_method_names = ["post"]
+    form_class = TeamInviteUserForm
+
+    @method_decorator(team_required)
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        self.team = self.request.team
+        self.role = self.team.role_for(self.request.user)
+        if self.role not in [Membership.ROLE_MANAGER, Membership.ROLE_OWNER]:
+            raise Http404()
+        return super(TeamInviteView, self).dispatch(*args, **kwargs)
+
+    def get_form_kwargs(self):
+        form_kwargs = super(TeamInviteView, self).get_form_kwargs()
+        form_kwargs.update({"team": self.team})
+        return form_kwargs
+
+    def form_valid(self, form):
+        user_or_email = form.cleaned_data["invitee"]
+        role = form.cleaned_data["role"]
+        if isinstance(user_or_email, string_types):
+            membership = self.team.invite_user(self.request.user, user_or_email, role)
+        else:
+            membership = self.team.add_user(user_or_email, role)
+        form_class = self.get_form_class()
+        data = {
+            "html": render_to_string(
+                "teams/_invite_form.html",
+                {
+                    "invite_form": form_class(team=self.team),
+                    "team": self.team
+                },
+                context_instance=RequestContext(self.request)
+            )
+        }
+        if membership is not None:
+            if membership.state == Membership.STATE_APPLIED:
+                fragment_class = ".applicants"
+            elif membership.state == Membership.STATE_INVITED:
+                fragment_class = ".invitees"
+            elif membership.state in (Membership.STATE_AUTO_JOINED, Membership.STATE_ACCEPTED):
+                fragment_class = {
+                    Membership.ROLE_OWNER: ".owners",
+                    Membership.ROLE_MANAGER: ".managers",
+                    Membership.ROLE_MEMBER: ".members"
+                }[membership.role]
+            data.update({
+                "append-fragments": {
+                    fragment_class: render_to_string(
+                        "teams/_membership.html",
+                        {
+                            "membership": membership,
+                            "team": self.team
+                        },
+                        context_instance=RequestContext(self.request)
+                    )
+                }
+            })
+        return self.render_to_response(data)
+
+    def form_invalid(self, form):
+        data = {
+            "html": render_to_string("teams/_invite_form.html", {
+                "invite_form": form,
+                "team": self.team
+            }, context_instance=RequestContext(self.request))
+        }
+        return self.render_to_response(data)
+
+    def render_to_response(self, context, **response_kwargs):
+        return JsonResponse(context)
 
 
 @team_required

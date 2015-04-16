@@ -225,7 +225,8 @@ def team_invite(request):
                     fragment_class: render_to_string(
                         "teams/_membership.html",
                         {
-                            "membership": membership
+                            "membership": membership,
+                            "team": request.team
                         },
                         context_instance=RequestContext(request)
                     )
@@ -261,7 +262,8 @@ def team_member_resend_invite(request, pk):
         "html": render_to_string(
             "teams/_membership.html",
             {
-                "membership": membership
+                "membership": membership,
+                "team": request.team
             },
             context_instance=RequestContext(request)
         )
@@ -278,7 +280,8 @@ def team_member_promote(request, pk):
         "html": render_to_string(
             "teams/_membership.html",
             {
-                "membership": membership
+                "membership": membership,
+                "team": request.team
             },
             context_instance=RequestContext(request)
         )
@@ -295,7 +298,8 @@ def team_member_demote(request, pk):
         "html": render_to_string(
             "teams/_membership.html",
             {
-                "membership": membership
+                "membership": membership,
+                "team": request.team
             },
             context_instance=RequestContext(request)
         )

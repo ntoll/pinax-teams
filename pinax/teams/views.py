@@ -7,7 +7,7 @@ from django.template.loader import render_to_string
 from django.utils.decorators import method_decorator
 from django.views.decorators.http import require_POST
 from django.views.generic.edit import CreateView
-from django.views.generic import ListView, FormView
+from django.views.generic import ListView, FormView, TemplateView
 
 from django.contrib import messages
 
@@ -91,6 +91,32 @@ def team_detail(request):
         "can_leave": team.can_leave(request.user),
         "can_apply": team.can_apply(request.user),
     })
+
+
+class TeamManageView(TemplateView):
+
+    template_name = "teams/team_manage.html"
+
+    @method_decorator(manager_required)
+    def dispatch(self, *args, **kwargs):
+        self.team = self.request.team
+        self.role = self.team.role_for(self.request.user)
+        return super(TeamManageView, self).dispatch(*args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super(TeamManageView, self).get_context_data(**kwargs)
+        ctx.update({
+            "team": self.team,
+            "role": self.role,
+            "invite_form": self.get_team_invite_form(),
+            "can_join": self.team.can_join(self.request.user),
+            "can_leave": self.team.can_leave(self.request.user),
+            "can_apply": self.team.can_apply(self.request.user),
+        })
+        return ctx
+
+    def get_team_invite_form(self):
+        return TeamInviteUserForm(team=self.team)
 
 
 @team_required

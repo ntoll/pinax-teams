@@ -362,7 +362,7 @@ def team_member_revoke_invite(request, pk):
 @require_POST
 def team_member_resend_invite(request, pk):
     membership = get_object_or_404(request.team.memberships.all(), pk=pk)
-    membership.resend_invite(by=self.request.user)
+    membership.resend_invite(by=request.user)
     data = {
         "html": render_to_string(
             "teams/_membership.html",
@@ -416,7 +416,7 @@ def team_member_demote(request, pk):
 @require_POST
 def team_member_remove(request, pk):
     membership = get_object_or_404(request.team.memberships.all(), pk=pk)
-    membership.remove(by=self.request.user)
+    membership.remove(by=request.user)
     data = {
         "html": ""
     }

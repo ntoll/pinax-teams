@@ -351,7 +351,7 @@ def team_invite(request):
 @require_POST
 def team_member_revoke_invite(request, pk):
     membership = get_object_or_404(request.team.memberships.all(), pk=pk)
-    membership.remove()
+    membership.remove(by=request.user)
     data = {
         "html": ""
     }

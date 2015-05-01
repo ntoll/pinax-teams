@@ -3,6 +3,7 @@ import os
 import uuid
 
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.encoding import python_2_unicode_compatible
@@ -14,6 +15,10 @@ from kaleo.models import JoinInvitation
 from slugify import slugify
 
 from . import signals
+from .hooks import hookset
+
+
+MESSAGE_STRINGS = hookset.get_message_strings()
 
 
 def avatar_upload(instance, filename):
@@ -63,6 +68,10 @@ class Team(models.Model):
 
     def __str__(self):
         return self.name
+
+    def clean(self):
+        if self.pk and self.pk == self.parent_id:
+            raise ValidationError({"parent": MESSAGE_STRINGS["self-referencing-parent"]})
 
     def can_join(self, user):
         state = self.state_for(user)

@@ -56,6 +56,8 @@ class Team(models.Model):
     creator = models.ForeignKey(AUTH_USER_MODEL, related_name="teams_created")
     created = models.DateTimeField(default=timezone.now, editable=False)
 
+    parent = models.ForeignKey("self", blank=True, null=True, related_name="children")
+
     def get_absolute_url(self):
         return reverse("team_detail", args=[self.slug])
 

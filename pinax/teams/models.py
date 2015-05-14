@@ -91,6 +91,24 @@ class Team(models.Model):
         state = self.state_for(user)
         return self.member_access == Team.MEMBER_ACCESS_APPLICATION and state is None
 
+    #@@@
+    def get_root_team(team):
+        while getattr(team, "parent"):
+            team = team.parent
+        return team
+
+    # @@@
+    @property
+    def ancestors(team):
+        chain = []
+        while getattr(team, "parent"):
+            chain.append(team)
+            team = team.parent
+        chain.append(team)
+        #filo
+        chain.reverse()
+        return chain
+
     @property
     def applicants(self):
         return self.memberships.filter(state=Membership.STATE_APPLIED)

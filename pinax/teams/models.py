@@ -27,8 +27,14 @@ def avatar_upload(instance, filename):
     return os.path.join("avatars", filename)
 
 
-def create_slug(name):
-    return slugify(name)[:50]
+def create_slug(name, parent=None):
+    slug = slugify(name)
+    if parent:
+        slug = "{parent_pk}-{slug}".format(
+            parent_pk=parent.pk,
+            slug=slug,
+        )
+    return slug[:50]
 
 
 @python_2_unicode_compatible
@@ -199,7 +205,7 @@ class Team(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id:
-            self.slug = create_slug(self.name)
+            self.slug = create_slug(self.name, self.parent)
         self.full_clean()
         super(Team, self).save(*args, **kwargs)
 

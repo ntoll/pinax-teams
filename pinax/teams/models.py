@@ -188,10 +188,27 @@ class Team(models.Model):
             return membership
 
     def for_user(self, user):
-        try:
-            return self.memberships.get(user=user)
-        except Membership.DoesNotExist:
-            pass
+        """
+        Return the first membership found for the current team and user
+        or for any of the team's parents and the user
+
+        @@@ we may decide to explicitly add membership for "children" if a 
+        user is a manager or member of a parent org
+        """
+        attr = "_membership_for_user"
+
+        if hasattr(self, attr) is False:
+            team = self
+            membership = None
+            while team:
+                try:
+                    membership = team.memberships.get(user=user)
+                    break
+                except Membership.DoesNotExist:
+                    team = team.parent
+            # @@@ care about the type of membership if retrieved from a parent
+            setattr(self, attr, membership)
+        return getattr(self, attr)
 
     def state_for(self, user):
         membership = self.for_user(user=user)

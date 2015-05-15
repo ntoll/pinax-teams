@@ -221,13 +221,9 @@ class TeamInviteView(FormView):
     http_method_names = ["post"]
     form_class = TeamInviteUserForm
 
-    @method_decorator(team_required)
-    @method_decorator(login_required)
+    @method_decorator(manager_required)
     def dispatch(self, *args, **kwargs):
         self.team = self.request.team
-        self.role = self.team.role_for(self.request.user)
-        if self.role not in [Membership.ROLE_MANAGER, Membership.ROLE_OWNER]:
-            raise Http404()
         return super(TeamInviteView, self).dispatch(*args, **kwargs)
 
     def get_form_kwargs(self):

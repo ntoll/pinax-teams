@@ -96,14 +96,19 @@ def team_detail(request):
     })
 
 
-class TeamManageBaseView(TemplateView):
+class TeamManageView(TemplateView):
 
     template_name = "teams/team_manage.html"
 
+    @method_decorator(manager_required)
+    def dispatch(self, *args, **kwargs):
+        self.team = self.request.team
+        self.role = self.team.role_for(self.request.user)
+        return super(TeamManageView, self).dispatch(*args, **kwargs)
+
     def get_context_data(self, **kwargs):
-        ctx = super(TeamManageBaseView, self).get_context_data(**kwargs)
+        ctx = super(TeamManageView, self).get_context_data(**kwargs)
         ctx.update({
-            # @@@ assumes self.team and self.role are defined on views inheriting from TeamManageBaseView
             "team": self.team,
             "role": self.role,
             "invite_form": self.get_team_invite_form(),
@@ -115,15 +120,6 @@ class TeamManageBaseView(TemplateView):
 
     def get_team_invite_form(self):
         return TeamInviteUserForm(team=self.team)
-
-
-class TeamManageView(TeamManageBaseView):
-
-    @method_decorator(manager_required)
-    def dispatch(self, *args, **kwargs):
-        self.team = self.request.team
-        self.role = self.team.role_for(self.request.user)
-        return super(TeamManageView, self).dispatch(*args, **kwargs)
 
 
 @team_required

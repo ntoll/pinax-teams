@@ -55,6 +55,20 @@ def ancestors_for(context, team=None):
     return ancestors
 
 
+@register.assignment_tag(takes_context=True)
+def descendants_for(context, team=None):
+    if team is None:
+        team = context["team"]
+
+    descendants = []
+    for descendant in team.children.order_by("slug"):
+        descendants.append({
+            "team": descendant,
+            "can_manage": descendant.role_for(context["user"]) in [Membership.ROLE_MANAGER, Membership.ROLE_OWNER]
+        })
+    return descendants
+
+
 # @@@ document template
 @register.inclusion_tag("teams/_breadcrumbs.html", takes_context=True)
 def get_team_breadcrumbs(context):

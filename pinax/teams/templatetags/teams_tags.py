@@ -60,3 +60,8 @@ def ancestors_for(context, team=None):
 def get_team_breadcrumbs(context):
     context["ancestors"] = ancestors_for(context)
     return context
+
+
+@register.filter()
+def is_managed_by(team, user):
+    return team.role_for(user) in [Membership.ROLE_MANAGER, Membership.ROLE_OWNER]

@@ -53,3 +53,10 @@ def ancestors_for(context, team=None):
         })
     context["ancestors"] = ancestors
     return ancestors
+
+
+# @@@ document template
+@register.inclusion_tag("teams/_breadcrumbs.html", takes_context=True)
+def get_team_breadcrumbs(context):
+    context["ancestors"] = ancestors_for(context)
+    return context

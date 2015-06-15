@@ -10,9 +10,9 @@ from django.utils.encoding import python_2_unicode_compatible
 
 import reversion
 
-from account.compat import AUTH_USER_MODEL
 from kaleo.models import JoinInvitation
 from slugify import slugify
+from account.conf import settings
 
 from . import signals
 from .hooks import hookset
@@ -64,7 +64,7 @@ class Team(models.Model):
     description = models.TextField(blank=True)
     member_access = models.CharField(max_length=20, choices=MEMBER_ACCESS_CHOICES)
     manager_access = models.CharField(max_length=20, choices=MANAGER_ACCESS_CHOICES)
-    creator = models.ForeignKey(AUTH_USER_MODEL, related_name="teams_created")
+    creator = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="teams_created")
     created = models.DateTimeField(default=timezone.now, editable=False)
 
     parent = models.ForeignKey("self", blank=True, null=True, related_name="children")
@@ -260,7 +260,7 @@ class Membership(models.Model):
     ]
 
     team = models.ForeignKey(Team, related_name="memberships")
-    user = models.ForeignKey(AUTH_USER_MODEL, related_name="memberships", null=True, blank=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="memberships", null=True, blank=True)
     invite = models.ForeignKey(JoinInvitation, related_name="memberships", null=True, blank=True)
     state = models.CharField(max_length=20, choices=STATE_CHOICES)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_MEMBER)

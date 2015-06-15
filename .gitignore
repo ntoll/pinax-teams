@@ -6,5 +6,6 @@ MANIFEST
 *.pyc
 *.egg-info
 *.egg
+*.swp
 docs/_build/
 htmlcov/

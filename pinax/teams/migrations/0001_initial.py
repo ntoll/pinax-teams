@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('kaleo', '0001_initial'),
+        ('kaleo', '__first__'),
     ]
 
     operations = [

@@ -240,9 +240,12 @@ class Membership(models.Model):
     STATE_ACCEPTED = "accepted"
     STATE_AUTO_JOINED = "auto-joined"
 
-    ROLE_MEMBER = "member"
-    ROLE_MANAGER = "manager"
-    ROLE_OWNER = "owner"
+    ROLE_MANAGER = "manager"  # one who is an organisational bureaucrat
+    ROLE_OWNER = "owner"  # one who is administratively responsible
+    ROLE_TEACHER = "teacher"  # one who delivers classes, sets work & assesses
+    ROLE_STUDENT = "student"  # one who attends classes and completes work
+    ROLE_ASSISTANT = "assistant"  # one who assists the teacher
+    ROLE_ASSESSOR = "assessor"  # one who assesses student's work
 
     STATE_CHOICES = [
         (STATE_APPLIED, "applied"),
@@ -254,16 +257,19 @@ class Membership(models.Model):
     ]
 
     ROLE_CHOICES = [
-        (ROLE_MEMBER, "member"),
         (ROLE_MANAGER, "manager"),
-        (ROLE_OWNER, "owner")
+        (ROLE_OWNER, "owner"),
+        (ROLE_TEACHER, "teacher"),
+        (ROLE_STUDENT, "student"),
+        (ROLE_ASSISTANT, "assistant"),
+        (ROLE_ASSESSOR, "assessor"),
     ]
 
     team = models.ForeignKey(Team, related_name="memberships")
     user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="memberships", null=True, blank=True)
     invite = models.ForeignKey(JoinInvitation, related_name="memberships", null=True, blank=True)
     state = models.CharField(max_length=20, choices=STATE_CHOICES)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_MEMBER)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_STUDENT)
     created = models.DateTimeField(default=timezone.now)
 
     def is_owner(self):
